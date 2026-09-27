@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}
+Register · PocketSmart AI
+{% endblock %}
+
+
+{% block content %}
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        <p class="eyebrow">
+            GET STARTED
+        </p>
+
+        <h1>
+            Create your account
+        </h1>
+
+        <p class="muted">
+            Start building smarter budget plans.
+        </p>
+
+
+        <form id="register-form">
+
+
+            <label>
+
+                Full name
+
+                <input
+                    name="full_name"
+                    type="text"
+                    required
+                    minlength="2"
+                >
+
+            </label>
+
+
+            <label>
+
+                Email
+
+                <input
+                    name="email"
+                    type="email"
+                    required
+                >
+
+            </label>
+
+
+            <label>
+
+                Password
+
+                <input
+                    name="password"
+                    type="password"
+                    required
+                    minlength="8"
+                >
+
+            </label>
+
+
+            <button
+                class="btn primary full"
+                type="submit"
+            >
+                Create account
+            </button>
+
+
+            <p
+                id="form-message"
+                class="message"
+            ></p>
+
+
+        </form>
+
+
+        <p class="muted">
+
+            Already have an account?
+
+            <a href="/login">
+                Login
+            </a>
+
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+document
+    .getElementById("register-form")
+    .addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+            const form =
+                new FormData(event.target);
+
+            const body =
+                Object.fromEntries(form);
+
+
+            const response =
+                await api(
+                    "/api/auth/register",
+                    {
+                        method: "POST",
+                        body: JSON.stringify(body)
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                showMessage(
+                    await errorText(response)
+                );
+
+                return;
+            }
+
+
+            const loginResponse =
+                await api(
+                    "/api/auth/login",
+                    {
+                        method: "POST",
+                        body: JSON.stringify({
+                            email: body.email,
+                            password: body.password
+                        })
+                    }
+                );
+
+
+            if (loginResponse.ok) {
+
+                window.location.href =
+                    "/dashboard";
+
+            } else {
+
+                showMessage(
+                    "Account created. Please login."
+                );
+            }
+
+        }
+    );
+
+</script>
+
+{% endblock %}

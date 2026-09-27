@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}
+Party Planner · PocketSmart AI
+{% endblock %}
+
+
+{% block content %}
+
+<section class="page-header">
+
+    <p class="eyebrow">
+        PARTY BUDGET PLANNER
+    </p>
+
+    <h1>
+        Make your guest list fit the budget.
+    </h1>
+
+    <p class="lead">
+        Create a balanced starting budget
+        for your event.
+    </p>
+
+</section>
+
+
+<form
+    id="party-form"
+    class="card form-grid"
+>
+
+
+    <label>
+
+        Budget (₹)
+
+        <input
+            name="budget"
+            type="number"
+            min="1"
+            required
+            placeholder="75000"
+        >
+
+    </label>
+
+
+    <label>
+
+        Number of guests
+
+        <input
+            name="guests"
+            type="number"
+            min="1"
+            required
+            placeholder="50"
+        >
+
+    </label>
+
+
+    <label>
+
+        Event type
+
+        <input
+            name="event_type"
+            required
+            placeholder="Birthday"
+        >
+
+    </label>
+
+
+    <label>
+
+        Venue preference
+
+        <input
+            name="venue"
+            value="flexible"
+            placeholder="Restaurant"
+        >
+
+    </label>
+
+
+    <label>
+
+        City
+
+        <input
+            name="city"
+            placeholder="Bengaluru"
+        >
+
+    </label>
+
+
+    <label>
+
+        Food preference
+
+        <input
+            name="food_preference"
+            value="mixed"
+            placeholder="Vegetarian"
+        >
+
+    </label>
+
+
+    <button
+        type="submit"
+        class="btn primary full-width"
+    >
+        Generate Party Plan
+    </button>
+
+
+    <p
+        id="form-message"
+        class="message full-width"
+    ></p>
+
+
+</form>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+document
+    .getElementById("party-form")
+    .addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+
+            const form =
+                new FormData(event.target);
+
+
+            const body = {
+
+                budget:
+                    Number(
+                        form.get("budget")
+                    ),
+
+                guests:
+                    Number(
+                        form.get("guests")
+                    ),
+
+                event_type:
+                    form.get("event_type"),
+
+                venue:
+                    form.get("venue"),
+
+                city:
+                    form.get("city"),
+
+                food_preference:
+                    form.get(
+                        "food_preference"
+                    )
+
+            };
+
+
+            const response =
+                await api(
+                    "/api/generate-party",
+                    {
+                        method: "POST",
+                        body: JSON.stringify(body)
+                    }
+                );
+
+
+            if (response.ok) {
+
+                const result =
+                    await response.json();
+
+                window.location.href =
+                    `/recommendations/${result.id}`;
+
+                return;
+            }
+
+
+            showMessage(
+                await errorText(response)
+            );
+
+        }
+    );
+
+</script>
+
+{% endblock %}

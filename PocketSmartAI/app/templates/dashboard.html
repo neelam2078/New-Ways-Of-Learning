@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard · PocketSmart AI
+{% endblock %}
+
+
+{% block content %}
+
+<section class="page-header">
+
+    <p class="eyebrow">
+        DASHBOARD
+    </p>
+
+    <h1>
+        Hello, {{ user.full_name }}.
+    </h1>
+
+    <p class="lead">
+        Choose a planner to get started.
+    </p>
+
+</section>
+
+
+<section class="feature-grid">
+
+
+    <a
+        href="/planner/home"
+        class="feature-card"
+    >
+
+        <div class="feature-icon">
+            ⌂
+        </div>
+
+        <h3>
+            Home Interior
+        </h3>
+
+        <p>
+            Design a room while keeping
+            your spending organized.
+        </p>
+
+    </a>
+
+
+    <a
+        href="/planner/party"
+        class="feature-card"
+    >
+
+        <div class="feature-icon">
+            ✦
+        </div>
+
+        <h3>
+            Party Planner
+        </h3>
+
+        <p>
+            Build a party budget for
+            food, venue and entertainment.
+        </p>
+
+    </a>
+
+
+    <a
+        href="/planner/jewelry"
+        class="feature-card"
+    >
+
+        <div class="feature-icon">
+            ◇
+        </div>
+
+        <h3>
+            Jewelry Planner
+        </h3>
+
+        <p>
+            Find coordinated jewelry
+            ideas within your budget.
+        </p>
+
+    </a>
+
+
+</section>
+
+
+<section class="card dashboard-history">
+
+    <div class="section-row">
+
+        <h2>
+            Recent recommendations
+        </h2>
+
+        <a href="/history">
+            View all
+        </a>
+
+    </div>
+
+
+    <div
+        id="recent"
+        class="history-list"
+    >
+
+        <p class="muted">
+            Loading...
+        </p>
+
+    </div>
+
+</section>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+async function loadRecent() {
+
+    const response =
+        await api("/api/history");
+
+    const container =
+        document.getElementById("recent");
+
+
+    if (!response.ok) {
+
+        container.innerHTML =
+            "<p class='message'>Unable to load history.</p>";
+
+        return;
+    }
+
+
+    const items =
+        await response.json();
+
+
+    if (!items.length) {
+
+        container.innerHTML =
+            "<p class='muted'>No recommendations yet.</p>";
+
+        return;
+    }
+
+
+    container.innerHTML =
+        items
+            .slice(0, 5)
+            .map(
+                item => `
+
+                    <a
+                        href="/recommendations/${item.id}"
+                        class="history-item"
+                    >
+
+                        <strong>
+                            ${item.planner_type}
+                        </strong>
+
+                        <span>
+                            ${new Date(
+                                item.created_at
+                            ).toLocaleString()}
+                        </span>
+
+                        <span>
+                            ₹${Number(
+                                item.response.budget
+                            ).toLocaleString("en-IN")}
+                        </span>
+
+                    </a>
+
+                `
+            )
+            .join("");
+
+}
+
+
+loadRecent();
+
+</script>
+
+{% endblock %}

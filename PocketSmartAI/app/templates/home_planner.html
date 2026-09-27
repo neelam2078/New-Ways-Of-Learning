@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home Planner · PocketSmart AI
+{% endblock %}
+
+
+{% block content %}
+
+<section class="page-header">
+
+    <p class="eyebrow">
+        HOME INTERIOR PLANNER
+    </p>
+
+    <h1>
+        Build a room around your budget.
+    </h1>
+
+    <p class="lead">
+        Tell PocketSmart AI what you need
+        and it will create a practical
+        starting plan.
+    </p>
+
+</section>
+
+
+<form
+    id="home-form"
+    class="card form-grid"
+>
+
+
+    <label>
+
+        Budget (₹)
+
+        <input
+            name="budget"
+            type="number"
+            min="1"
+            required
+            placeholder="100000"
+        >
+
+    </label>
+
+
+    <label>
+
+        Room type
+
+        <input
+            name="room_type"
+            required
+            placeholder="Living Room"
+        >
+
+    </label>
+
+
+    <label>
+
+        Style
+
+        <input
+            name="style"
+            value="modern"
+            placeholder="Modern"
+        >
+
+    </label>
+
+
+    <label>
+
+        City
+
+        <input
+            name="city"
+            placeholder="Chennai"
+        >
+
+    </label>
+
+
+    <div class="full-width">
+
+        <h3>
+            Required items
+        </h3>
+
+
+        <div id="home-items">
+
+
+            <div class="item-row">
+
+                <input
+                    name="item_category"
+                    value="Furniture"
+                    required
+                >
+
+                <input
+                    name="item_quantity"
+                    type="number"
+                    value="1"
+                    min="1"
+                    required
+                >
+
+                <button
+                    type="button"
+                    class="remove-button"
+                    onclick="this.parentElement.remove()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="item-row">
+
+                <input
+                    name="item_category"
+                    value="Lighting"
+                    required
+                >
+
+                <input
+                    name="item_quantity"
+                    type="number"
+                    value="2"
+                    min="1"
+                    required
+                >
+
+                <button
+                    type="button"
+                    class="remove-button"
+                    onclick="this.parentElement.remove()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+        </div>
+
+
+        <button
+            type="button"
+            class="btn secondary"
+            onclick="addHomeItem()"
+        >
+            + Add item
+        </button>
+
+    </div>
+
+
+    <button
+        type="submit"
+        class="btn primary full-width"
+    >
+        Generate Home Plan
+    </button>
+
+
+    <p
+        id="form-message"
+        class="message full-width"
+    ></p>
+
+
+</form>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+function addHomeItem() {
+
+    document
+        .getElementById("home-items")
+        .insertAdjacentHTML(
+            "beforeend",
+
+            `
+
+            <div class="item-row">
+
+                <input
+                    name="item_category"
+                    placeholder="Decor"
+                    required
+                >
+
+                <input
+                    name="item_quantity"
+                    type="number"
+                    value="1"
+                    min="1"
+                    required
+                >
+
+                <button
+                    type="button"
+                    class="remove-button"
+                    onclick="this.parentElement.remove()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            `
+        );
+}
+
+
+document
+    .getElementById("home-form")
+    .addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+
+            const form =
+                new FormData(event.target);
+
+
+            const categories =
+                form.getAll(
+                    "item_category"
+                );
+
+
+            const quantities =
+                form.getAll(
+                    "item_quantity"
+                );
+
+
+            const body = {
+
+                budget: Number(
+                    form.get("budget")
+                ),
+
+                room_type:
+                    form.get("room_type"),
+
+                style:
+                    form.get("style"),
+
+                city:
+                    form.get("city"),
+
+                items: []
+
+            };
+
+
+            categories.forEach(
+                function(category, index) {
+
+                    body.items.push({
+
+                        category,
+
+                        quantity:
+                            Number(
+                                quantities[index]
+                            )
+
+                    });
+
+                }
+            );
+
+
+            const response =
+                await api(
+                    "/api/generate-home",
+                    {
+                        method: "POST",
+                        body: JSON.stringify(body)
+                    }
+                );
+
+
+            if (response.ok) {
+
+                const result =
+                    await response.json();
+
+                window.location.href =
+                    `/recommendations/${result.id}`;
+
+                return;
+            }
+
+
+            showMessage(
+                await errorText(response)
+            );
+
+        }
+    );
+
+</script>
+
+{% endblock %}

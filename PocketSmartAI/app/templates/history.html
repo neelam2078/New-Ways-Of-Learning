@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}
+History · PocketSmart AI
+{% endblock %}
+
+
+{% block content %}
+
+<section class="page-header">
+
+    <p class="eyebrow">
+        HISTORY
+    </p>
+
+    <h1>
+        Your planning history
+    </h1>
+
+    <p class="lead">
+        Review your previous AI-generated plans.
+    </p>
+
+</section>
+
+
+<div
+    id="history"
+    class="history-list"
+>
+
+    <p class="muted">
+        Loading...
+    </p>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+async function loadHistory() {
+
+    const response =
+        await api("/api/history");
+
+    const container =
+        document.getElementById("history");
+
+
+    if (!response.ok) {
+
+        container.innerHTML =
+            "<p class='message'>Unable to load history.</p>";
+
+        return;
+    }
+
+
+    const items =
+        await response.json();
+
+
+    if (!items.length) {
+
+        container.innerHTML =
+            "<div class='card'>No recommendations yet.</div>";
+
+        return;
+    }
+
+
+    container.innerHTML =
+        items
+            .map(
+                item => `
+
+                    <a
+                        href="/recommendations/${item.id}"
+                        class="card history-card"
+                    >
+
+                        <span class="badge">
+                            ${item.planner_type}
+                        </span>
+
+                        <h3>
+                            ${item.response.summary}
+                        </h3>
+
+                        <p>
+                            ₹${Number(
+                                item.response.budget
+                            ).toLocaleString("en-IN")}
+                        </p>
+
+                        <small>
+                            ${new Date(
+                                item.created_at
+                            ).toLocaleString()}
+                        </small>
+
+                    </a>
+
+                `
+            )
+            .join("");
+
+}
+
+
+loadHistory();
+
+</script>
+
+{% endblock %}

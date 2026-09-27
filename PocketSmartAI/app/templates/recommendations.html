@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}
+Recommendations · PocketSmart AI
+{% endblock %}
+
+
+{% block content %}
+
+<section class="page-header">
+
+    <p class="eyebrow">
+        AI RECOMMENDATIONS
+    </p>
+
+    <h1>
+        Your personalized plan
+    </h1>
+
+</section>
+
+
+<div id="result">
+
+    <div class="card">
+
+        <p class="muted">
+            Loading recommendation...
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+async function loadRecommendation() {
+
+    const response =
+        await api(
+            "/api/recommendations-details/{{ recommendation_id }}"
+        );
+
+
+    const container =
+        document.getElementById(
+            "result"
+        );
+
+
+    if (!response.ok) {
+
+        container.innerHTML = `
+
+            <div class="card">
+
+                <p class="message">
+                    Recommendation not found.
+                </p>
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    const data =
+        await response.json();
+
+
+    const result =
+        data.result;
+
+
+    container.innerHTML = `
+
+        <section class="card recommendation-summary">
+
+            <div>
+
+                <span class="badge">
+                    ${result.planner_type}
+                </span>
+
+                <h2>
+                    ${result.summary}
+                </h2>
+
+            </div>
+
+
+            <div class="budget-summary">
+
+                <small>
+                    Your budget
+                </small>
+
+                <strong>
+                    ₹${Number(
+                        result.budget
+                    ).toLocaleString("en-IN")}
+                </strong>
+
+                <small>
+                    Estimated:
+                    ₹${Number(
+                        result.total_estimated
+                    ).toLocaleString("en-IN")}
+                </small>
+
+            </div>
+
+        </section>
+
+
+        <section class="card">
+
+            <h2>
+                Budget allocation
+            </h2>
+
+            <div class="allocation-list">
+
+                ${result.budget_allocation
+                    .map(
+                        allocation => `
+
+                            <div class="allocation-row">
+
+                                <span>
+                                    ${allocation.category}
+                                </span>
+
+                                <strong>
+                                    ₹${Number(
+                                        allocation.amount
+                                    ).toLocaleString("en-IN")}
+                                </strong>
+
+                                <small>
+                                    ${allocation.percentage}%
+                                </small>
+
+                            </div>
+
+                        `
+                    )
+                    .join("")}
+
+            </div>
+
+        </section>
+
+
+        <section class="recommendation-grid">
+
+            ${result.recommendations
+                .map(
+                    item => `
+
+                        <article class="card recommendation-card">
+
+                            <span class="badge">
+                                ${item.platform}
+                            </span>
+
+                            <h3>
+                                ${item.title}
+                            </h3>
+
+                            <p>
+                                ${item.reason}
+                            </p>
+
+                            <strong>
+                                Estimated:
+                                ₹${Number(
+                                    item.estimated_price
+                                ).toLocaleString("en-IN")}
+                            </strong>
+
+                            <a
+                                href="${item.url}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="btn secondary full"
+                            >
+                                Search on ${item.platform}
+                            </a>
+
+                        </article>
+
+                    `
+                )
+                .join("")}
+
+        </section>
+
+
+        <section class="card">
+
+            <h2>
+                Helpful tips
+            </h2>
+
+            <ul>
+
+                ${result.tips
+                    .map(
+                        tip =>
+                            `<li>${tip}</li>`
+                    )
+                    .join("")}
+
+            </ul>
+
+        </section>
+
+    `;
+
+}
+
+
+loadRecommendation();
+
+</script>
+
+{% endblock %}
